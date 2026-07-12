@@ -4,7 +4,9 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <meta name="theme-color" content="#4f46e5">
-  <meta name="description" content="Simulador interativo de estudos com correção e progresso sincronizado.">
+  <meta name="description" content="Simulador pessoal de estudos.">
+  <meta name="referrer" content="no-referrer">
+  <meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'self' https://cdn.jsdelivr.net; style-src 'self' https://fonts.googleapis.com; font-src https://fonts.gstatic.com; connect-src 'self' https://otvnhahpwblgxevzrsra.supabase.co wss://otvnhahpwblgxevzrsra.supabase.co; img-src 'self' data:; object-src 'none'; base-uri 'none'; form-action 'self'; upgrade-insecure-requests">
   <title>Simulador de Estudos</title>
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
@@ -16,13 +18,13 @@
   <header class="cabecalho">
     <a class="marca" href="#"><span>✓</span><strong>Simulador de Estudos</strong></a>
     <div class="acoes-cabecalho">
-      <span id="status-sincronizacao" class="status-sincronizacao">Somente neste dispositivo</span>
-      <button id="botao-conta" class="botao secundario botao-conta" type="button">Entrar</button>
+      <span id="status-sincronizacao" class="status-sincronizacao">Acesso protegido</span>
+      <button id="botao-conta" class="botao secundario botao-conta" type="button" hidden>Minha conta</button>
       <button id="botao-tema" class="botao-icone" type="button" aria-label="Alternar tema">◐</button>
     </div>
   </header>
 
-  <main class="pagina">
+  <main id="conteudo-aplicacao" class="pagina" hidden>
     <section id="inicio" class="inicio">
       <div class="hero">
         <span class="etiqueta">Acesso pessoal</span>
@@ -30,7 +32,7 @@
         <p>Escolha o modo, responda no seu ritmo e acompanhe seu desempenho ao final.</p>
         <div class="recursos">
           <article><b>⚡ Correção rápida</b><small>Na hora ou ao finalizar.</small></article>
-          <article><b>☁️ Progresso sincronizado</b><small>Continue em outro aparelho após entrar.</small></article>
+          <article><b>☁️ Progresso sincronizado</b><small>Continue em outro aparelho.</small></article>
           <article><b>📊 Revisão completa</b><small>Veja erros e pontos de melhoria.</small></article>
         </div>
       </div>
@@ -92,19 +94,17 @@
     </section>
   </main>
 
-  <div id="modal-conta" class="modal" hidden>
-    <div class="modal__fundo" data-fechar-modal></div>
+  <div id="modal-conta" class="modal">
+    <div class="modal__fundo"></div>
     <section class="modal__conteudo" role="dialog" aria-modal="true" aria-labelledby="titulo-conta">
-      <button class="modal__fechar" type="button" data-fechar-modal aria-label="Fechar">×</button>
       <div id="area-login">
-        <span class="etiqueta">Acesso pessoal</span>
+        <span class="etiqueta">Acesso protegido</span>
         <h2 id="titulo-conta">Entrar no simulador</h2>
-        <p>Use o único usuário autorizado para sincronizar seu progresso.</p>
-        <form id="formulario-conta" class="formulario-conta">
-          <label>E-mail<input id="email-conta" type="email" autocomplete="email" required></label>
-          <label>Senha<input id="senha-conta" type="password" autocomplete="current-password" minlength="6" required></label>
+        <p>Informe o usuário autorizado.</p>
+        <form id="formulario-conta" class="formulario-conta" autocomplete="on">
+          <label>E-mail<input id="email-conta" type="email" autocomplete="username" inputmode="email" maxlength="254" required></label>
+          <label>Senha<input id="senha-conta" type="password" autocomplete="current-password" minlength="8" maxlength="128" required></label>
           <button id="botao-entrar" class="botao primario" type="submit">Entrar</button>
-          <button id="botao-cadastrar" type="button" hidden aria-hidden="true" tabindex="-1">Criar conta</button>
         </form>
       </div>
       <div id="area-usuario" hidden>
@@ -113,12 +113,12 @@
         <p id="email-usuario"></p>
         <button id="botao-sair" class="botao perigo" type="button">Sair da conta</button>
       </div>
-      <p id="mensagem-conta" class="mensagem-conta" role="status"></p>
+      <p id="mensagem-conta" class="mensagem-conta" role="status" aria-live="polite"></p>
     </section>
   </div>
 
   <div id="aviso" class="aviso" role="status"></div>
-  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/dist/umd/supabase.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/dist/umd/supabase.min.js" crossorigin="anonymous"></script>
   <script src="questoes.js"></script>
   <script src="script.js"></script>
   <script src="integracao-supabase.js"></script>

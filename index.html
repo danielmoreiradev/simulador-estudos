@@ -13,6 +13,7 @@
   <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@600;700;800&family=Poppins:wght@400;500;600&display=swap" rel="stylesheet">
   <link rel="stylesheet" href="estilo.css">
   <link rel="stylesheet" href="supabase.css">
+  <link rel="stylesheet" href="limpeza-historico.css">
 </head>
 <body>
   <header class="cabecalho">
@@ -37,34 +38,18 @@
         <div><span class="etiqueta">Painel de desempenho</span><h1>Olá, Daniel. Vamos evoluir hoje?</h1><p id="resumo-periodo">Seus dados de estudo aparecerão aqui.</p></div>
         <button class="botao primario" data-tela="inicio" type="button">Resolver questões</button>
       </div>
-
       <div class="cards-kpi">
         <article class="kpi"><span>Questões na semana</span><strong id="kpi-questoes">0</strong><small id="kpi-questoes-comp">Sem comparação ainda</small></article>
         <article class="kpi"><span>Média semanal</span><strong id="kpi-media">0%</strong><small id="kpi-media-comp">Sem comparação ainda</small></article>
         <article class="kpi"><span>Tempo estudado</span><strong id="kpi-tempo">0h</strong><small>Somatório das tentativas</small></article>
         <article class="kpi"><span>Sequência de estudo</span><strong id="kpi-sequencia">0 dias</strong><small>Dias consecutivos com atividade</small></article>
       </div>
-
       <div class="grade-dashboard">
-        <article class="cartao painel-amplo">
-          <div class="titulo-painel"><div><span class="etiqueta">Evolução</span><h2>Desempenho recente</h2></div><span id="comparativo-mensal" class="variacao neutra">Sem dados anteriores</span></div>
-          <div id="grafico-semanal" class="grafico-barras" aria-label="Gráfico de desempenho semanal"></div>
-        </article>
-        <article class="cartao">
-          <div class="titulo-painel"><div><span class="etiqueta">Prioridade</span><h2>Onde focar agora</h2></div></div>
-          <div id="pontos-fracos" class="lista-ranking"><p class="vazio">Conclua simulados para gerar recomendações.</p></div>
-        </article>
-        <article class="cartao">
-          <div class="titulo-painel"><div><span class="etiqueta">Matérias</span><h2>Acertos por área</h2></div></div>
-          <div id="desempenho-materias" class="lista-progresso"><p class="vazio">Nenhum dado disponível.</p></div>
-        </article>
-        <article class="cartao painel-amplo">
-          <div class="titulo-painel"><div><span class="etiqueta">Atividade</span><h2>Últimas tentativas</h2></div><button class="link-botao" data-tela="historico" type="button">Ver histórico completo</button></div>
-          <div id="ultimas-tentativas" class="tabela-responsiva"><p class="vazio">Nenhuma tentativa concluída.</p></div>
-        </article>
-        <article class="cartao dica-card">
-          <span class="dica-card__icone">💡</span><div><span class="etiqueta">Dica de estudo</span><h2 id="dica-titulo">Consistência vence intensidade</h2><p id="dica-texto">Resolva algumas questões todos os dias e revise os erros em até 24 horas.</p></div>
-        </article>
+        <article class="cartao painel-amplo"><div class="titulo-painel"><div><span class="etiqueta">Evolução</span><h2>Desempenho recente</h2></div><span id="comparativo-mensal" class="variacao neutra">Sem dados anteriores</span></div><div id="grafico-semanal" class="grafico-barras" aria-label="Gráfico de desempenho semanal"></div></article>
+        <article class="cartao"><div class="titulo-painel"><div><span class="etiqueta">Prioridade</span><h2>Onde focar agora</h2></div></div><div id="pontos-fracos" class="lista-ranking"><p class="vazio">Conclua simulados para gerar recomendações.</p></div></article>
+        <article class="cartao"><div class="titulo-painel"><div><span class="etiqueta">Matérias</span><h2>Acertos por área</h2></div></div><div id="desempenho-materias" class="lista-progresso"><p class="vazio">Nenhum dado disponível.</p></div></article>
+        <article class="cartao painel-amplo"><div class="titulo-painel"><div><span class="etiqueta">Atividade</span><h2>Últimas tentativas</h2></div><button class="link-botao" data-tela="historico" type="button">Ver histórico completo</button></div><div id="ultimas-tentativas" class="tabela-responsiva"><p class="vazio">Nenhuma tentativa concluída.</p></div></article>
+        <article class="cartao dica-card"><span class="dica-card__icone">💡</span><div><span class="etiqueta">Dica de estudo</span><h2 id="dica-titulo">Consistência vence intensidade</h2><p id="dica-texto">Resolva algumas questões todos os dias e revise os erros em até 24 horas.</p></div></article>
       </div>
     </section>
 
@@ -72,30 +57,13 @@
       <div class="cabecalho-secao"><div><span class="etiqueta">Novo estudo</span><h1>Configure seu simulado</h1><p>Escolha o modo e comece uma nova sessão de questões.</p></div></div>
       <div class="inicio-grid">
         <div class="cartao apresentacao-simulado"><span class="icone-grande">📚</span><h2 id="titulo-simulado-home">Simulado disponível</h2><p>Correção detalhada, revisão de erros e histórico permanente.</p><div class="recursos"><article><b>⚡ Feedback rápido</b><small>Correção na hora ou ao final.</small></article><article><b>☁️ Salvamento automático</b><small>Continue em qualquer dispositivo.</small></article><article><b>📊 Análise completa</b><small>Resultados alimentam seu painel.</small></article></div></div>
-        <div class="cartao configuracao">
-          <div class="linha"><span>Questões disponíveis</span><strong id="total-inicial">0</strong></div>
-          <label class="opcao"><input type="radio" name="modo" value="estudo" checked><span><b>Modo estudo</b><small>Corrige após cada resposta.</small></span></label>
-          <label class="opcao"><input type="radio" name="modo" value="prova"><span><b>Modo prova</b><small>Corrige somente no final.</small></span></label>
-          <label class="check"><input id="embaralhar-questoes" type="checkbox"> Embaralhar questões</label>
-          <label class="check"><input id="embaralhar-alternativas" type="checkbox"> Embaralhar alternativas</label>
-          <button id="botao-iniciar" class="botao primario" type="button">Iniciar novo simulado</button>
-          <button id="botao-continuar" class="botao secundario" type="button" hidden>Continuar progresso salvo</button>
-        </div>
+        <div class="cartao configuracao"><div class="linha"><span>Questões disponíveis</span><strong id="total-inicial">0</strong></div><label class="opcao"><input type="radio" name="modo" value="estudo" checked><span><b>Modo estudo</b><small>Corrige após cada resposta.</small></span></label><label class="opcao"><input type="radio" name="modo" value="prova"><span><b>Modo prova</b><small>Corrige somente no final.</small></span></label><label class="check"><input id="embaralhar-questoes" type="checkbox"> Embaralhar questões</label><label class="check"><input id="embaralhar-alternativas" type="checkbox"> Embaralhar alternativas</label><button id="botao-iniciar" class="botao primario" type="button">Iniciar novo simulado</button><button id="botao-continuar" class="botao secundario" type="button" hidden>Continuar progresso salvo</button></div>
       </div>
     </section>
 
     <section id="simulado" class="tela simulado" hidden>
-      <aside class="lateral">
-        <div class="cartao"><div class="linha"><span>Progresso</span><strong id="texto-progresso">0 de 0</strong></div><div class="barra"><span id="barra-progresso"></span></div><div class="resumo"><div><small>Respondidas</small><b id="respondidas">0</b></div><div><small>Restantes</small><b id="restantes">0</b></div><div><small>Tempo</small><b id="tempo">00:00</b></div></div></div>
-        <div id="grade-questoes" class="grade-questoes"></div>
-        <button id="botao-reiniciar-prova" class="botao secundario" type="button">↻ Reiniciar simulado</button>
-        <button id="botao-finalizar" class="botao perigo" type="button">Finalizar simulado</button>
-      </aside>
-      <div class="conteudo">
-        <div class="topo-questao"><div><span id="materia" class="etiqueta"></span><h2 id="titulo-questao"></h2></div><button id="botao-revisao" class="botao revisar" type="button">☆ Marcar para revisar</button></div>
-        <article class="cartao questao"><div class="metadados"><span id="assunto"></span><span id="origem"></span></div><div id="enunciado" class="enunciado"></div><div id="alternativas" class="alternativas"></div><div id="comentario" class="comentario" hidden><strong id="titulo-comentario"></strong><p id="texto-comentario"></p></div></article>
-        <div class="navegacao"><button id="anterior" class="botao secundario" type="button">← Anterior</button><button id="limpar" class="botao neutro" type="button">Limpar</button><button id="proxima" class="botao primario" type="button">Próxima →</button></div>
-      </div>
+      <aside class="lateral"><div class="cartao"><div class="linha"><span>Progresso</span><strong id="texto-progresso">0 de 0</strong></div><div class="barra"><span id="barra-progresso"></span></div><div class="resumo"><div><small>Respondidas</small><b id="respondidas">0</b></div><div><small>Restantes</small><b id="restantes">0</b></div><div><small>Tempo</small><b id="tempo">00:00</b></div></div></div><div id="grade-questoes" class="grade-questoes"></div><button id="botao-reiniciar-prova" class="botao secundario" type="button">↻ Reiniciar simulado</button><button id="botao-finalizar" class="botao perigo" type="button">Finalizar simulado</button></aside>
+      <div class="conteudo"><div class="topo-questao"><div><span id="materia" class="etiqueta"></span><h2 id="titulo-questao"></h2></div><button id="botao-revisao" class="botao revisar" type="button">☆ Marcar para revisar</button></div><article class="cartao questao"><div class="metadados"><span id="assunto"></span><span id="origem"></span></div><div id="enunciado" class="enunciado"></div><div id="alternativas" class="alternativas"></div><div id="comentario" class="comentario" hidden><strong id="titulo-comentario"></strong><p id="texto-comentario"></p></div></article><div class="navegacao"><button id="anterior" class="botao secundario" type="button">← Anterior</button><button id="limpar" class="botao neutro" type="button">Limpar</button><button id="proxima" class="botao primario" type="button">Próxima →</button></div></div>
     </section>
 
     <section id="resultado" class="tela resultado" hidden>
@@ -106,11 +74,28 @@
     </section>
 
     <section id="historico" class="tela" hidden>
-      <div class="cabecalho-secao"><div><span class="etiqueta">Arquivo completo</span><h1>Histórico de questões</h1><p>Consulte cada resposta, acerto e erro registrado.</p></div><div class="filtros-historico"><input id="busca-historico" type="search" placeholder="Buscar matéria, assunto ou questão"><select id="filtro-resultado"><option value="todos">Todos os resultados</option><option value="erradas">Somente erradas</option><option value="corretas">Somente corretas</option><option value="branco">Em branco</option></select></div></div>
+      <div class="cabecalho-secao historico-cabecalho"><div><span class="etiqueta">Arquivo completo</span><h1>Histórico de questões</h1><p>Consulte cada resposta, acerto e erro registrado.</p></div><div class="acoes-historico"><div class="filtros-historico"><input id="busca-historico" type="search" placeholder="Buscar matéria, assunto ou questão"><select id="filtro-resultado"><option value="todos">Todos os resultados</option><option value="erradas">Somente erradas</option><option value="corretas">Somente corretas</option><option value="branco">Em branco</option></select></div><button id="abrir-limpeza-historico" class="botao perigo" type="button">Limpar histórico</button></div></div>
       <div id="resumo-historico" class="cards-kpi compactos"></div>
       <div id="lista-historico" class="lista-historico"><p class="vazio">Nenhum registro encontrado.</p></div>
     </section>
   </main>
+
+  <div id="modal-limpeza-historico" class="modal-limpeza" hidden>
+    <div class="modal-limpeza__fundo" data-fechar-limpeza></div>
+    <section class="modal-limpeza__conteudo" role="dialog" aria-modal="true" aria-labelledby="titulo-limpeza">
+      <button class="modal-limpeza__fechar" type="button" data-fechar-limpeza aria-label="Fechar">×</button>
+      <span class="etiqueta">Gerenciar dados</span>
+      <h2 id="titulo-limpeza">Limpar histórico</h2>
+      <p>Escolha um período. O progresso atual do simulado não será apagado.</p>
+      <form id="form-limpeza-historico" class="form-limpeza">
+        <label>Período<select id="periodo-limpeza"><option value="7">Últimos 7 dias</option><option value="30">Últimos 30 dias</option><option value="90">Últimos 3 meses</option><option value="365">Último ano</option><option value="personalizado">Período personalizado</option><option value="tudo">Todo o histórico</option></select></label>
+        <div id="datas-personalizadas" class="datas-personalizadas" hidden><label>De<input id="data-inicial-limpeza" type="date"></label><label>Até<input id="data-final-limpeza" type="date"></label></div>
+        <label class="confirmacao-limpeza"><input id="confirmar-limpeza" type="checkbox" required> Entendo que essa ação é permanente e não pode ser desfeita.</label>
+        <p id="mensagem-limpeza" class="mensagem-limpeza" role="status" aria-live="polite"></p>
+        <div class="acoes-modal"><button class="botao secundario" type="button" data-fechar-limpeza>Cancelar</button><button id="executar-limpeza" class="botao perigo" type="submit">Apagar dados selecionados</button></div>
+      </form>
+    </section>
+  </div>
 
   <div id="modal-conta" class="modal"><div class="modal__fundo"></div><section class="modal__conteudo" role="dialog" aria-modal="true" aria-labelledby="titulo-conta"><div id="area-login"><span class="etiqueta">Acesso protegido</span><h2 id="titulo-conta">Entrar</h2><p>Informe o usuário autorizado.</p><form id="formulario-conta" class="formulario-conta" autocomplete="on"><label>E-mail<input id="email-conta" type="email" autocomplete="username" maxlength="254" required></label><label>Senha<input id="senha-conta" type="password" autocomplete="current-password" minlength="8" maxlength="128" required></label><button class="botao primario" type="submit">Entrar</button></form></div><div id="area-usuario" hidden><span class="etiqueta">Conta</span><h2>Daniel M.</h2><p id="email-usuario"></p><button id="botao-sair" class="botao perigo" type="button">Sair da conta</button></div><p id="mensagem-conta" class="mensagem-conta" role="status" aria-live="polite"></p></section></div>
   <div id="aviso" class="aviso" role="status"></div>
@@ -118,5 +103,6 @@
   <script src="questoes.js"></script>
   <script src="script.js"></script>
   <script src="integracao-supabase.js"></script>
+  <script src="limpeza-historico.js"></script>
 </body>
 </html>

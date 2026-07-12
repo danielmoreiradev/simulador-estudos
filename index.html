@@ -25,7 +25,7 @@
   <main class="pagina">
     <section id="inicio" class="inicio">
       <div class="hero">
-        <span class="etiqueta">Modelo reutilizável</span>
+        <span class="etiqueta">Acesso pessoal</span>
         <h1>Aprenda resolvendo questões.</h1>
         <p>Escolha o modo, responda no seu ritmo e acompanhe seu desempenho ao final.</p>
         <div class="recursos">
@@ -97,14 +97,14 @@
     <section class="modal__conteudo" role="dialog" aria-modal="true" aria-labelledby="titulo-conta">
       <button class="modal__fechar" type="button" data-fechar-modal aria-label="Fechar">×</button>
       <div id="area-login">
-        <span class="etiqueta">Sincronização</span>
-        <h2 id="titulo-conta">Acesse sua conta</h2>
-        <p>Entre para continuar seus simulados em qualquer aparelho.</p>
+        <span class="etiqueta">Acesso pessoal</span>
+        <h2 id="titulo-conta">Entrar no simulador</h2>
+        <p>Use o único usuário autorizado para sincronizar seu progresso.</p>
         <form id="formulario-conta" class="formulario-conta">
           <label>E-mail<input id="email-conta" type="email" autocomplete="email" required></label>
           <label>Senha<input id="senha-conta" type="password" autocomplete="current-password" minlength="6" required></label>
           <button id="botao-entrar" class="botao primario" type="submit">Entrar</button>
-          <button id="botao-cadastrar" class="botao secundario" type="button">Criar conta</button>
+          <button id="botao-cadastrar" type="button" hidden aria-hidden="true" tabindex="-1">Criar conta</button>
         </form>
       </div>
       <div id="area-usuario" hidden>

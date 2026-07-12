@@ -3,11 +3,11 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <meta name="theme-color" content="#4f46e5">
-  <meta name="description" content="Simulador pessoal de estudos.">
+  <meta name="theme-color" content="#4338ca">
+  <meta name="description" content="Ambiente pessoal de estudos.">
   <meta name="referrer" content="no-referrer">
   <meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'self' https://cdn.jsdelivr.net; style-src 'self' https://fonts.googleapis.com; font-src https://fonts.gstatic.com; connect-src 'self' https://otvnhahpwblgxevzrsra.supabase.co wss://otvnhahpwblgxevzrsra.supabase.co; img-src 'self' data:; object-src 'none'; base-uri 'none'; form-action 'self'; upgrade-insecure-requests">
-  <title>Simulador de Estudos</title>
+  <title>Central de Estudos</title>
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@600;700;800&family=Poppins:wght@400;500;600&display=swap" rel="stylesheet">
@@ -16,109 +16,105 @@
 </head>
 <body>
   <header class="cabecalho">
-    <a class="marca" href="#"><span>✓</span><strong>Simulador de Estudos</strong></a>
-    <div class="acoes-cabecalho">
-      <span id="status-sincronizacao" class="status-sincronizacao">Acesso protegido</span>
-      <button id="botao-conta" class="botao secundario botao-conta" type="button" hidden>Minha conta</button>
-      <button id="botao-tema" class="botao-icone" type="button" aria-label="Alternar tema">◐</button>
+    <div class="cabecalho__interno">
+      <button class="marca" id="ir-dashboard" type="button"><span>✓</span><strong>Central de Estudos</strong></button>
+      <nav class="menu" aria-label="Navegação principal">
+        <button class="menu__item ativo" data-tela="dashboard" type="button">Visão geral</button>
+        <button class="menu__item" data-tela="inicio" type="button">Simulado</button>
+        <button class="menu__item" data-tela="historico" type="button">Histórico</button>
+      </nav>
+      <div class="perfil-cabecalho">
+        <div><strong>Daniel M.</strong><small id="data-atual"></small></div>
+        <button id="botao-conta" class="botao-icone" type="button" aria-label="Minha conta">DM</button>
+        <button id="botao-tema" class="botao-icone" type="button" aria-label="Alternar tema">◐</button>
+      </div>
     </div>
   </header>
 
   <main id="conteudo-aplicacao" class="pagina" hidden>
-    <section id="inicio" class="inicio">
-      <div class="hero">
-        <span class="etiqueta">Acesso pessoal</span>
-        <h1>Aprenda resolvendo questões.</h1>
-        <p>Escolha o modo, responda no seu ritmo e acompanhe seu desempenho ao final.</p>
-        <div class="recursos">
-          <article><b>⚡ Correção rápida</b><small>Na hora ou ao finalizar.</small></article>
-          <article><b>☁️ Progresso sincronizado</b><small>Continue em outro aparelho.</small></article>
-          <article><b>📊 Revisão completa</b><small>Veja erros e pontos de melhoria.</small></article>
-        </div>
+    <section id="dashboard" class="tela">
+      <div class="boas-vindas">
+        <div><span class="etiqueta">Painel de desempenho</span><h1>Olá, Daniel. Vamos evoluir hoje?</h1><p id="resumo-periodo">Seus dados de estudo aparecerão aqui.</p></div>
+        <button class="botao primario" data-tela="inicio" type="button">Resolver questões</button>
       </div>
 
-      <div class="cartao configuracao">
-        <div class="linha"><span>Configurar simulado</span><strong id="total-inicial">0 questões</strong></div>
-        <label class="opcao"><input type="radio" name="modo" value="estudo" checked><span><b>Modo estudo</b><small>Corrige após cada resposta.</small></span></label>
-        <label class="opcao"><input type="radio" name="modo" value="prova"><span><b>Modo prova</b><small>Corrige somente no final.</small></span></label>
-        <label class="check"><input id="embaralhar-questoes" type="checkbox"> Embaralhar questões</label>
-        <label class="check"><input id="embaralhar-alternativas" type="checkbox"> Embaralhar alternativas</label>
-        <button id="botao-iniciar" class="botao primario" type="button">Iniciar simulado</button>
-        <button id="botao-continuar" class="botao secundario" type="button" hidden>Continuar progresso salvo</button>
+      <div class="cards-kpi">
+        <article class="kpi"><span>Questões na semana</span><strong id="kpi-questoes">0</strong><small id="kpi-questoes-comp">Sem comparação ainda</small></article>
+        <article class="kpi"><span>Média semanal</span><strong id="kpi-media">0%</strong><small id="kpi-media-comp">Sem comparação ainda</small></article>
+        <article class="kpi"><span>Tempo estudado</span><strong id="kpi-tempo">0h</strong><small>Somatório das tentativas</small></article>
+        <article class="kpi"><span>Sequência de estudo</span><strong id="kpi-sequencia">0 dias</strong><small>Dias consecutivos com atividade</small></article>
+      </div>
+
+      <div class="grade-dashboard">
+        <article class="cartao painel-amplo">
+          <div class="titulo-painel"><div><span class="etiqueta">Evolução</span><h2>Desempenho recente</h2></div><span id="comparativo-mensal" class="variacao neutra">Sem dados anteriores</span></div>
+          <div id="grafico-semanal" class="grafico-barras" aria-label="Gráfico de desempenho semanal"></div>
+        </article>
+        <article class="cartao">
+          <div class="titulo-painel"><div><span class="etiqueta">Prioridade</span><h2>Onde focar agora</h2></div></div>
+          <div id="pontos-fracos" class="lista-ranking"><p class="vazio">Conclua simulados para gerar recomendações.</p></div>
+        </article>
+        <article class="cartao">
+          <div class="titulo-painel"><div><span class="etiqueta">Matérias</span><h2>Acertos por área</h2></div></div>
+          <div id="desempenho-materias" class="lista-progresso"><p class="vazio">Nenhum dado disponível.</p></div>
+        </article>
+        <article class="cartao painel-amplo">
+          <div class="titulo-painel"><div><span class="etiqueta">Atividade</span><h2>Últimas tentativas</h2></div><button class="link-botao" data-tela="historico" type="button">Ver histórico completo</button></div>
+          <div id="ultimas-tentativas" class="tabela-responsiva"><p class="vazio">Nenhuma tentativa concluída.</p></div>
+        </article>
+        <article class="cartao dica-card">
+          <span class="dica-card__icone">💡</span><div><span class="etiqueta">Dica de estudo</span><h2 id="dica-titulo">Consistência vence intensidade</h2><p id="dica-texto">Resolva algumas questões todos os dias e revise os erros em até 24 horas.</p></div>
+        </article>
       </div>
     </section>
 
-    <section id="simulado" class="simulado" hidden>
-      <aside class="lateral">
-        <div class="cartao">
-          <div class="linha"><span>Progresso</span><strong id="texto-progresso">0 de 0</strong></div>
-          <div class="barra"><span id="barra-progresso"></span></div>
-          <div class="resumo"><div><small>Respondidas</small><b id="respondidas">0</b></div><div><small>Restantes</small><b id="restantes">0</b></div><div><small>Tempo</small><b id="tempo">00:00</b></div></div>
+    <section id="inicio" class="tela" hidden>
+      <div class="cabecalho-secao"><div><span class="etiqueta">Novo estudo</span><h1>Configure seu simulado</h1><p>Escolha o modo e comece uma nova sessão de questões.</p></div></div>
+      <div class="inicio-grid">
+        <div class="cartao apresentacao-simulado"><span class="icone-grande">📚</span><h2 id="titulo-simulado-home">Simulado disponível</h2><p>Correção detalhada, revisão de erros e histórico permanente.</p><div class="recursos"><article><b>⚡ Feedback rápido</b><small>Correção na hora ou ao final.</small></article><article><b>☁️ Salvamento automático</b><small>Continue em qualquer dispositivo.</small></article><article><b>📊 Análise completa</b><small>Resultados alimentam seu painel.</small></article></div></div>
+        <div class="cartao configuracao">
+          <div class="linha"><span>Questões disponíveis</span><strong id="total-inicial">0</strong></div>
+          <label class="opcao"><input type="radio" name="modo" value="estudo" checked><span><b>Modo estudo</b><small>Corrige após cada resposta.</small></span></label>
+          <label class="opcao"><input type="radio" name="modo" value="prova"><span><b>Modo prova</b><small>Corrige somente no final.</small></span></label>
+          <label class="check"><input id="embaralhar-questoes" type="checkbox"> Embaralhar questões</label>
+          <label class="check"><input id="embaralhar-alternativas" type="checkbox"> Embaralhar alternativas</label>
+          <button id="botao-iniciar" class="botao primario" type="button">Iniciar novo simulado</button>
+          <button id="botao-continuar" class="botao secundario" type="button" hidden>Continuar progresso salvo</button>
         </div>
+      </div>
+    </section>
+
+    <section id="simulado" class="tela simulado" hidden>
+      <aside class="lateral">
+        <div class="cartao"><div class="linha"><span>Progresso</span><strong id="texto-progresso">0 de 0</strong></div><div class="barra"><span id="barra-progresso"></span></div><div class="resumo"><div><small>Respondidas</small><b id="respondidas">0</b></div><div><small>Restantes</small><b id="restantes">0</b></div><div><small>Tempo</small><b id="tempo">00:00</b></div></div></div>
         <div id="grade-questoes" class="grade-questoes"></div>
+        <button id="botao-reiniciar-prova" class="botao secundario" type="button">↻ Reiniciar simulado</button>
         <button id="botao-finalizar" class="botao perigo" type="button">Finalizar simulado</button>
       </aside>
-
       <div class="conteudo">
-        <div class="topo-questao">
-          <div><span id="materia" class="etiqueta"></span><h2 id="titulo-questao"></h2></div>
-          <button id="botao-revisao" class="botao secundario" type="button">☆ Marcar para revisar</button>
-        </div>
-        <article class="cartao questao">
-          <div class="metadados"><span id="assunto"></span><span id="origem"></span></div>
-          <div id="enunciado" class="enunciado"></div>
-          <div id="alternativas" class="alternativas"></div>
-          <div id="comentario" class="comentario" hidden><strong id="titulo-comentario"></strong><p id="texto-comentario"></p></div>
-        </article>
+        <div class="topo-questao"><div><span id="materia" class="etiqueta"></span><h2 id="titulo-questao"></h2></div><button id="botao-revisao" class="botao revisar" type="button">☆ Marcar para revisar</button></div>
+        <article class="cartao questao"><div class="metadados"><span id="assunto"></span><span id="origem"></span></div><div id="enunciado" class="enunciado"></div><div id="alternativas" class="alternativas"></div><div id="comentario" class="comentario" hidden><strong id="titulo-comentario"></strong><p id="texto-comentario"></p></div></article>
         <div class="navegacao"><button id="anterior" class="botao secundario" type="button">← Anterior</button><button id="limpar" class="botao neutro" type="button">Limpar</button><button id="proxima" class="botao primario" type="button">Próxima →</button></div>
       </div>
     </section>
 
-    <section id="resultado" class="resultado" hidden>
-      <div class="cartao destaque">
-        <div><span class="etiqueta">Simulado concluído</span><h2 id="resultado-titulo">Seu resultado</h2><p id="resultado-mensagem"></p></div>
-        <div id="circulo" class="circulo"><div><strong id="percentual">0%</strong><small>de acertos</small></div></div>
-      </div>
-      <div class="estatisticas">
-        <article><span>Total</span><strong id="total">0</strong></article>
-        <article><span>Acertos</span><strong id="acertos">0</strong></article>
-        <article><span>Erros</span><strong id="erros">0</strong></article>
-        <article><span>Em branco</span><strong id="branco">0</strong></article>
-        <article><span>Tempo</span><strong id="tempo-final">00:00</strong></article>
-      </div>
-      <div class="cartao analise">
-        <div class="linha"><h3>Revisão das questões</h3><div><button class="filtro ativo" data-filtro="todas">Todas</button><button class="filtro" data-filtro="erradas">Erradas</button><button class="filtro" data-filtro="marcadas">Marcadas</button></div></div>
-        <div id="lista-revisao" class="lista-revisao"></div>
-      </div>
-      <div class="acoes"><button id="imprimir" class="botao secundario">Imprimir</button><button id="reiniciar" class="botao primario">Fazer novamente</button></div>
+    <section id="resultado" class="tela resultado" hidden>
+      <div class="cartao destaque"><div><span class="etiqueta">Simulado concluído</span><h2 id="resultado-titulo">Seu resultado</h2><p id="resultado-mensagem"></p></div><div id="circulo" class="circulo"><div><strong id="percentual">0%</strong><small>de acertos</small></div></div></div>
+      <div class="estatisticas"><article><span>Total</span><strong id="total">0</strong></article><article class="estatistica-certa"><span>Acertos</span><strong id="acertos">0</strong></article><article class="estatistica-errada"><span>Erros</span><strong id="erros">0</strong></article><article><span>Em branco</span><strong id="branco">0</strong></article><article><span>Tempo</span><strong id="tempo-final">00:00</strong></article></div>
+      <div class="cartao analise"><div class="linha"><h3>Revisão das questões</h3><div><button class="filtro ativo" data-filtro="todas">Todas</button><button class="filtro" data-filtro="erradas">Erradas</button><button class="filtro" data-filtro="marcadas">Marcadas</button></div></div><div id="lista-revisao" class="lista-revisao"></div></div>
+      <div class="acoes"><button id="voltar-dashboard" class="botao secundario" type="button">Ir para o painel</button><button id="imprimir" class="botao secundario" type="button">Imprimir</button><button id="reiniciar" class="botao primario" type="button">Fazer novamente</button></div>
+    </section>
+
+    <section id="historico" class="tela" hidden>
+      <div class="cabecalho-secao"><div><span class="etiqueta">Arquivo completo</span><h1>Histórico de questões</h1><p>Consulte cada resposta, acerto e erro registrado.</p></div><div class="filtros-historico"><input id="busca-historico" type="search" placeholder="Buscar matéria, assunto ou questão"><select id="filtro-resultado"><option value="todos">Todos os resultados</option><option value="erradas">Somente erradas</option><option value="corretas">Somente corretas</option><option value="branco">Em branco</option></select></div></div>
+      <div id="resumo-historico" class="cards-kpi compactos"></div>
+      <div id="lista-historico" class="lista-historico"><p class="vazio">Nenhum registro encontrado.</p></div>
     </section>
   </main>
 
-  <div id="modal-conta" class="modal">
-    <div class="modal__fundo"></div>
-    <section class="modal__conteudo" role="dialog" aria-modal="true" aria-labelledby="titulo-conta">
-      <div id="area-login">
-        <span class="etiqueta">Acesso protegido</span>
-        <h2 id="titulo-conta">Entrar no simulador</h2>
-        <p>Informe o usuário autorizado.</p>
-        <form id="formulario-conta" class="formulario-conta" autocomplete="on">
-          <label>E-mail<input id="email-conta" type="email" autocomplete="username" inputmode="email" maxlength="254" required></label>
-          <label>Senha<input id="senha-conta" type="password" autocomplete="current-password" minlength="8" maxlength="128" required></label>
-          <button id="botao-entrar" class="botao primario" type="submit">Entrar</button>
-        </form>
-      </div>
-      <div id="area-usuario" hidden>
-        <span class="etiqueta">Conta conectada</span>
-        <h2>Progresso sincronizado</h2>
-        <p id="email-usuario"></p>
-        <button id="botao-sair" class="botao perigo" type="button">Sair da conta</button>
-      </div>
-      <p id="mensagem-conta" class="mensagem-conta" role="status" aria-live="polite"></p>
-    </section>
-  </div>
-
+  <div id="modal-conta" class="modal"><div class="modal__fundo"></div><section class="modal__conteudo" role="dialog" aria-modal="true" aria-labelledby="titulo-conta"><div id="area-login"><span class="etiqueta">Acesso protegido</span><h2 id="titulo-conta">Entrar</h2><p>Informe o usuário autorizado.</p><form id="formulario-conta" class="formulario-conta" autocomplete="on"><label>E-mail<input id="email-conta" type="email" autocomplete="username" maxlength="254" required></label><label>Senha<input id="senha-conta" type="password" autocomplete="current-password" minlength="8" maxlength="128" required></label><button class="botao primario" type="submit">Entrar</button></form></div><div id="area-usuario" hidden><span class="etiqueta">Conta</span><h2>Daniel M.</h2><p id="email-usuario"></p><button id="botao-sair" class="botao perigo" type="button">Sair da conta</button></div><p id="mensagem-conta" class="mensagem-conta" role="status" aria-live="polite"></p></section></div>
   <div id="aviso" class="aviso" role="status"></div>
-  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/dist/umd/supabase.min.js" crossorigin="anonymous"></script>
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.49.8/dist/umd/supabase.min.js" crossorigin="anonymous"></script>
   <script src="questoes.js"></script>
   <script src="script.js"></script>
   <script src="integracao-supabase.js"></script>

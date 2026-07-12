@@ -1,26 +1,32 @@
 (() => {
   "use strict";
 
-  const URL_SUPABASE = "https://otvnhahpwblgxevzrsra.supabase.co";
+  const URL_SERVICO = "https://otvnhahpwblgxevzrsra.supabase.co";
   const CHAVE_PUBLICA = "sb_publishable_OpslVSpJubk6OCLQzand-A_KkeLfQ6r";
   const CHAVE_PROGRESSO = `simulador_${DADOS_SIMULADO.identificador}`;
-  const INTERVALO_SINCRONIZACAO = 3000;
+  const INTERVALO_SINCRONIZACAO = 5000;
 
-  const cliente = window.supabase.createClient(URL_SUPABASE, CHAVE_PUBLICA, {
+  if (!window.supabase?.createClient) {
+    console.error("Serviço de autenticação indisponível.");
+    return;
+  }
+
+  const cliente = window.supabase.createClient(URL_SERVICO, CHAVE_PUBLICA, {
     auth: {
       persistSession: true,
       autoRefreshToken: true,
-      detectSessionInUrl: true
+      detectSessionInUrl: false,
+      storageKey: "simulador_sessao"
     }
   });
 
   const elementos = {
+    conteudo: document.querySelector("#conteudo-aplicacao"),
     modal: document.querySelector("#modal-conta"),
     botaoConta: document.querySelector("#botao-conta"),
     formulario: document.querySelector("#formulario-conta"),
     email: document.querySelector("#email-conta"),
     senha: document.querySelector("#senha-conta"),
-    cadastrar: document.querySelector("#botao-cadastrar"),
     sair: document.querySelector("#botao-sair"),
     areaLogin: document.querySelector("#area-login"),
     areaUsuario: document.querySelector("#area-usuario"),
@@ -31,176 +37,135 @@
 
   let usuarioAtual = null;
   let sincronizando = false;
-  let ultimoConteudoLocal = localStorage.getItem(CHAVE_PROGRESSO);
+  let ultimoConteudoEnviado = null;
 
-  function mostrarModal() {
-    elementos.modal.hidden = false;
-    document.body.classList.add("modal-aberto");
-    elementos.mensagem.textContent = "";
-    setTimeout(() => elementos.email?.focus(), 50);
+  function definirAcesso(usuario) {
+    usuarioAtual = usuario || null;
+    const conectado = Boolean(usuarioAtual);
+
+    elementos.conteudo.hidden = !conectado;
+    elementos.modal.hidden = conectado;
+    elementos.areaLogin.hidden = conectado;
+    elementos.areaUsuario.hidden = !conectado;
+    elementos.botaoConta.hidden = !conectado;
+    elementos.emailUsuario.textContent = conectado ? usuarioAtual.email || "Usuário autorizado" : "";
+    elementos.status.textContent = conectado ? "Conectado com segurança" : "Acesso protegido";
+    elementos.status.classList.toggle("conectado", conectado);
+    document.body.classList.toggle("modal-aberto", !conectado);
+
+    if (!conectado) {
+      elementos.formulario.reset();
+      setTimeout(() => elementos.email.focus(), 50);
+    }
   }
 
-  function fecharModal() {
+  function mostrarConta() {
+    if (!usuarioAtual) return;
+    elementos.modal.hidden = false;
+    elementos.areaLogin.hidden = true;
+    elementos.areaUsuario.hidden = false;
+    document.body.classList.add("modal-aberto");
+  }
+
+  function fecharConta() {
+    if (!usuarioAtual) return;
     elementos.modal.hidden = true;
     document.body.classList.remove("modal-aberto");
   }
 
-  function atualizarInterfaceUsuario(usuario) {
-    usuarioAtual = usuario || null;
-    const conectado = Boolean(usuarioAtual);
-
-    elementos.areaLogin.hidden = conectado;
-    elementos.areaUsuario.hidden = !conectado;
-    elementos.botaoConta.textContent = conectado ? "Minha conta" : "Entrar";
-    elementos.emailUsuario.textContent = conectado ? usuarioAtual.email : "";
-    elementos.status.textContent = conectado ? "Sincronizado com a nuvem" : "Somente neste dispositivo";
-    elementos.status.classList.toggle("conectado", conectado);
-  }
-
-  function mensagemConta(texto, tipo = "") {
+  function mensagem(texto, tipo = "") {
     elementos.mensagem.textContent = texto;
     elementos.mensagem.className = `mensagem-conta ${tipo}`.trim();
   }
 
   async function entrar(evento) {
     evento.preventDefault();
-    mensagemConta("Entrando...");
 
-    const { error } = await cliente.auth.signInWithPassword({
-      email: elementos.email.value.trim(),
-      password: elementos.senha.value
-    });
-
-    if (error) {
-      mensagemConta(traduzirErro(error.message), "erro");
+    const email = elementos.email.value.trim().toLowerCase();
+    const senha = elementos.senha.value;
+    if (!email || senha.length < 8) {
+      mensagem("Verifique o e-mail e a senha.", "erro");
       return;
     }
 
-    mensagemConta("Conta conectada com sucesso.", "sucesso");
-    elementos.formulario.reset();
-    await sincronizarAoEntrar();
-  }
+    const botao = elementos.formulario.querySelector("button[type='submit']");
+    botao.disabled = true;
+    mensagem("Verificando acesso...");
 
-  async function cadastrar() {
-    mensagemConta("Criando sua conta...");
-
-    const { data, error } = await cliente.auth.signUp({
-      email: elementos.email.value.trim(),
-      password: elementos.senha.value,
-      options: {
-        emailRedirectTo: "https://danielmoreiradev.github.io/simulador-estudos/"
+    try {
+      const { data, error } = await cliente.auth.signInWithPassword({ email, password: senha });
+      if (error || !data.user) {
+        mensagem("Não foi possível entrar. Verifique os dados.", "erro");
+        return;
       }
-    });
 
-    if (error) {
-      mensagemConta(traduzirErro(error.message), "erro");
-      return;
+      elementos.formulario.reset();
+      mensagem("");
+      definirAcesso(data.user);
+      await sincronizarAoEntrar();
+    } catch (erro) {
+      console.error("Falha de autenticação:", erro);
+      mensagem("Serviço temporariamente indisponível.", "erro");
+    } finally {
+      botao.disabled = false;
     }
-
-    if (!data.session) {
-      mensagemConta("Conta criada. Confira seu e-mail para confirmar o acesso.", "sucesso");
-      return;
-    }
-
-    mensagemConta("Conta criada e conectada.", "sucesso");
-    await sincronizarAoEntrar();
   }
 
   async function sair() {
-    const { error } = await cliente.auth.signOut();
+    const { error } = await cliente.auth.signOut({ scope: "local" });
     if (error) {
-      mensagemConta("Não foi possível sair da conta.", "erro");
+      mensagem("Não foi possível encerrar a sessão.", "erro");
       return;
     }
-    mensagemConta("Você saiu da conta. O progresso local continua neste aparelho.", "sucesso");
+    fecharConta();
+    definirAcesso(null);
   }
 
-  async function sincronizarAoEntrar() {
-    if (!usuarioAtual) return;
-
-    elementos.status.textContent = "Sincronizando...";
-
-    const remoto = await carregarProgressoRemoto();
-    const local = lerProgressoLocal();
-
-    if (remoto && !local) {
-      localStorage.setItem(CHAVE_PROGRESSO, JSON.stringify(remoto));
-      ultimoConteudoLocal = localStorage.getItem(CHAVE_PROGRESSO);
-      elementos.status.textContent = "Progresso recuperado";
-      setTimeout(() => location.reload(), 700);
-      return;
-    }
-
-    if (remoto && local) {
-      const combinado = combinarProgressos(local, remoto);
-      localStorage.setItem(CHAVE_PROGRESSO, JSON.stringify(combinado));
-      ultimoConteudoLocal = localStorage.getItem(CHAVE_PROGRESSO);
-    }
-
-    await sincronizarAgora();
-  }
-
-  function lerProgressoLocal() {
+  function lerLocal() {
     try {
       const conteudo = localStorage.getItem(CHAVE_PROGRESSO);
       return conteudo ? JSON.parse(conteudo) : null;
     } catch {
+      localStorage.removeItem(CHAVE_PROGRESSO);
       return null;
     }
   }
 
-  function combinarProgressos(local, remoto) {
-    return {
-      ...remoto,
-      ...local,
-      respostas: { ...(remoto.respostas || {}), ...(local.respostas || {}) },
-      marcadas: [...new Set([...(remoto.marcadas || []), ...(local.marcadas || [])])],
-      segundos: Math.max(local.segundos || 0, remoto.segundos || 0),
-      finalizado: Boolean(local.finalizado || remoto.finalizado),
-      questoes: local.questoes?.length ? local.questoes : remoto.questoes
-    };
+  function questoesPadrao() {
+    return DADOS_SIMULADO.questoes.map((questao) => ({
+      ...questao,
+      alternativas: questao.alternativas.map((texto, original) => ({ texto, original }))
+    }));
   }
 
-  async function carregarProgressoRemoto() {
+  async function carregarRemoto() {
     const { data: progresso, error: erroProgresso } = await cliente
       .from("progressos_simulado")
       .select("indice_atual, modo, segundos_decorridos, finalizado, marcadas")
-      .eq("usuario_id", usuarioAtual.id)
       .eq("simulado_id", DADOS_SIMULADO.identificador)
       .maybeSingle();
 
-    if (erroProgresso) {
-      console.error("Erro ao carregar progresso:", erroProgresso);
-      return null;
-    }
-
+    if (erroProgresso) throw erroProgresso;
     if (!progresso) return null;
 
     const { data: respostas, error: erroRespostas } = await cliente
       .from("respostas_questoes")
       .select("questao_id, alternativa_marcada, marcada_revisao")
-      .eq("usuario_id", usuarioAtual.id)
       .eq("simulado_id", DADOS_SIMULADO.identificador);
 
-    if (erroRespostas) {
-      console.error("Erro ao carregar respostas:", erroRespostas);
-      return null;
-    }
+    if (erroRespostas) throw erroRespostas;
 
-    const mapaRespostas = {};
-    const marcadas = new Set(Array.isArray(progresso.marcadas) ? progresso.marcadas : []);
-
+    const mapa = {};
+    const marcadas = new Set((progresso.marcadas || []).map(String));
     (respostas || []).forEach((item) => {
-      if (item.alternativa_marcada !== null) {
-        mapaRespostas[item.questao_id] = item.alternativa_marcada;
-      }
-      if (item.marcada_revisao) marcadas.add(item.questao_id);
+      if (item.alternativa_marcada !== null) mapa[item.questao_id] = item.alternativa_marcada;
+      if (item.marcada_revisao) marcadas.add(String(item.questao_id));
     });
 
     return {
-      questoes: copiarQuestoesPadrao(),
+      questoes: questoesPadrao(),
       indice: progresso.indice_atual,
-      respostas: mapaRespostas,
+      respostas: mapa,
       marcadas: [...marcadas],
       modo: progresso.modo,
       segundos: progresso.segundos_decorridos,
@@ -208,99 +173,81 @@
     };
   }
 
-  function copiarQuestoesPadrao() {
-    return DADOS_SIMULADO.questoes.map((questao) => ({
-      ...questao,
-      alternativas: questao.alternativas.map((texto, original) => ({ texto, original }))
-    }));
+  function combinar(local, remoto) {
+    if (!local) return remoto;
+    if (!remoto) return local;
+    return {
+      ...remoto,
+      ...local,
+      respostas: { ...(remoto.respostas || {}), ...(local.respostas || {}) },
+      marcadas: [...new Set([...(remoto.marcadas || []), ...(local.marcadas || [])].map(String))],
+      segundos: Math.max(Number(local.segundos || 0), Number(remoto.segundos || 0)),
+      finalizado: Boolean(local.finalizado || remoto.finalizado),
+      questoes: local.questoes?.length ? local.questoes : remoto.questoes
+    };
   }
 
-  async function sincronizarAgora() {
-    if (!usuarioAtual || sincronizando || !navigator.onLine) return;
-
-    const conteudoAtual = localStorage.getItem(CHAVE_PROGRESSO);
-
-    if (!conteudoAtual && ultimoConteudoLocal) {
-      await apagarProgressoRemoto();
-      ultimoConteudoLocal = null;
-      return;
-    }
-
-    if (!conteudoAtual || conteudoAtual === ultimoConteudoLocal) return;
-
-    sincronizando = true;
+  async function sincronizarAoEntrar() {
+    if (!usuarioAtual) return;
     elementos.status.textContent = "Sincronizando...";
 
     try {
-      const progresso = JSON.parse(conteudoAtual);
-      await salvarProgressoRemoto(progresso);
-      await salvarRespostasRemotas(progresso);
-      if (progresso.finalizado) await salvarResultadoRemoto(progresso);
-
-      ultimoConteudoLocal = conteudoAtual;
-      elementos.status.textContent = "Sincronizado agora";
-      setTimeout(() => {
-        if (usuarioAtual) elementos.status.textContent = "Sincronizado com a nuvem";
-      }, 1800);
+      const combinado = combinar(lerLocal(), await carregarRemoto());
+      if (combinado) localStorage.setItem(CHAVE_PROGRESSO, JSON.stringify(combinado));
+      ultimoConteudoEnviado = null;
+      await sincronizarAgora();
+      elementos.status.textContent = "Sincronizado com segurança";
     } catch (erro) {
-      console.error("Erro de sincronização:", erro);
+      console.error("Falha ao recuperar progresso:", erro);
       elementos.status.textContent = "Sincronização pendente";
-    } finally {
-      sincronizando = false;
     }
   }
 
-  async function salvarProgressoRemoto(progresso) {
+  async function salvarProgresso(progresso) {
     const { error } = await cliente.from("progressos_simulado").upsert({
       usuario_id: usuarioAtual.id,
       simulado_id: DADOS_SIMULADO.identificador,
-      indice_atual: Number(progresso.indice || 0),
+      indice_atual: Math.max(0, Number(progresso.indice || 0)),
       modo: progresso.modo === "prova" ? "prova" : "estudo",
-      segundos_decorridos: Number(progresso.segundos || 0),
+      segundos_decorridos: Math.max(0, Number(progresso.segundos || 0)),
       finalizado: Boolean(progresso.finalizado),
       marcadas: Array.isArray(progresso.marcadas) ? progresso.marcadas.map(String) : [],
       atualizado_em: new Date().toISOString()
     }, { onConflict: "usuario_id,simulado_id" });
-
     if (error) throw error;
   }
 
-  async function salvarRespostasRemotas(progresso) {
+  async function salvarRespostas(progresso) {
     const questoes = Array.isArray(progresso.questoes) ? progresso.questoes : [];
     const marcadas = new Set((progresso.marcadas || []).map(String));
-
     const linhas = questoes.map((questao) => {
-      const idQuestao = String(questao.id);
       const resposta = progresso.respostas?.[questao.id];
       return {
         usuario_id: usuarioAtual.id,
         simulado_id: DADOS_SIMULADO.identificador,
-        questao_id: idQuestao,
+        questao_id: String(questao.id),
         alternativa_marcada: resposta === undefined ? null : Number(resposta),
         correta: resposta === undefined ? null : Number(resposta) === Number(questao.respostaCorreta),
-        marcada_revisao: marcadas.has(idQuestao),
+        marcada_revisao: marcadas.has(String(questao.id)),
         atualizado_em: new Date().toISOString()
       };
     });
 
     if (!linhas.length) return;
-
     const { error } = await cliente.from("respostas_questoes").upsert(linhas, {
       onConflict: "usuario_id,simulado_id,questao_id"
     });
-
     if (error) throw error;
   }
 
-  async function salvarResultadoRemoto(progresso) {
-    const chaveResultado = `resultado_enviado_${usuarioAtual.id}_${DADOS_SIMULADO.identificador}`;
-    if (localStorage.getItem(chaveResultado)) return;
+  async function salvarResultado(progresso) {
+    const chave = `resultado_enviado_${usuarioAtual.id}_${DADOS_SIMULADO.identificador}`;
+    if (localStorage.getItem(chave)) return;
 
-    const questoes = progresso.questoes || [];
     let acertos = 0;
     let erros = 0;
     let emBranco = 0;
-
+    const questoes = progresso.questoes || [];
     questoes.forEach((questao) => {
       const resposta = progresso.respostas?.[questao.id];
       if (resposta === undefined) emBranco += 1;
@@ -309,77 +256,66 @@
     });
 
     const total = questoes.length;
-    const percentual = total ? Math.round((acertos / total) * 100) : 0;
-
     const { error } = await cliente.from("resultados_simulado").insert({
       usuario_id: usuarioAtual.id,
       simulado_id: DADOS_SIMULADO.identificador,
-      titulo_simulado: DADOS_SIMULADO.titulo,
+      titulo_simulado: String(DADOS_SIMULADO.titulo).slice(0, 200),
       total,
       acertos,
       erros,
       em_branco: emBranco,
-      percentual,
-      tempo_segundos: Number(progresso.segundos || 0)
+      percentual: total ? Math.round((acertos / total) * 100) : 0,
+      tempo_segundos: Math.max(0, Number(progresso.segundos || 0))
     });
 
     if (error) throw error;
-    localStorage.setItem(chaveResultado, "1");
+    localStorage.setItem(chave, "1");
   }
 
-  async function apagarProgressoRemoto() {
-    if (!usuarioAtual) return;
+  async function sincronizarAgora() {
+    if (!usuarioAtual || sincronizando || !navigator.onLine) return;
+    const conteudo = localStorage.getItem(CHAVE_PROGRESSO);
+    if (!conteudo || conteudo === ultimoConteudoEnviado) return;
 
-    const filtro = {
-      usuario_id: usuarioAtual.id,
-      simulado_id: DADOS_SIMULADO.identificador
-    };
-
-    const { error: erroRespostas } = await cliente
-      .from("respostas_questoes")
-      .delete()
-      .match(filtro);
-
-    const { error: erroProgresso } = await cliente
-      .from("progressos_simulado")
-      .delete()
-      .match(filtro);
-
-    if (erroRespostas || erroProgresso) {
-      console.error("Erro ao apagar progresso remoto:", erroRespostas || erroProgresso);
-      return;
+    sincronizando = true;
+    elementos.status.textContent = "Sincronizando...";
+    try {
+      const progresso = JSON.parse(conteudo);
+      await salvarProgresso(progresso);
+      await salvarRespostas(progresso);
+      if (progresso.finalizado) await salvarResultado(progresso);
+      ultimoConteudoEnviado = conteudo;
+      elementos.status.textContent = "Sincronizado com segurança";
+    } catch (erro) {
+      console.error("Falha de sincronização:", erro);
+      elementos.status.textContent = "Sincronização pendente";
+    } finally {
+      sincronizando = false;
     }
-
-    elementos.status.textContent = "Progresso reiniciado";
   }
 
-  function traduzirErro(mensagem) {
-    const texto = mensagem.toLowerCase();
-    if (texto.includes("invalid login credentials")) return "E-mail ou senha incorretos.";
-    if (texto.includes("email not confirmed")) return "Confirme seu e-mail antes de entrar.";
-    if (texto.includes("user already registered")) return "Este e-mail já possui uma conta.";
-    if (texto.includes("password")) return "A senha precisa ter pelo menos 6 caracteres.";
-    return "Não foi possível concluir. Verifique os dados e tente novamente.";
-  }
-
-  elementos.botaoConta.addEventListener("click", mostrarModal);
   elementos.formulario.addEventListener("submit", entrar);
-  elementos.cadastrar.addEventListener("click", cadastrar);
   elementos.sair.addEventListener("click", sair);
-  elementos.modal.querySelectorAll("[data-fechar-modal]").forEach((item) => item.addEventListener("click", fecharModal));
+  elementos.botaoConta.addEventListener("click", mostrarConta);
+  elementos.modal.addEventListener("click", (evento) => {
+    if (usuarioAtual && evento.target.classList.contains("modal__fundo")) fecharConta();
+  });
   document.addEventListener("keydown", (evento) => {
-    if (evento.key === "Escape" && !elementos.modal.hidden) fecharModal();
+    if (evento.key === "Escape" && usuarioAtual && !elementos.modal.hidden) fecharConta();
   });
 
-  cliente.auth.onAuthStateChange(async (_evento, sessao) => {
-    atualizarInterfaceUsuario(sessao?.user || null);
-    if (sessao?.user) await sincronizarAoEntrar();
+  cliente.auth.onAuthStateChange((_evento, sessao) => {
+    const novoUsuario = sessao?.user || null;
+    definirAcesso(novoUsuario);
+    if (novoUsuario) setTimeout(sincronizarAoEntrar, 0);
   });
 
-  cliente.auth.getSession().then(({ data }) => {
-    atualizarInterfaceUsuario(data.session?.user || null);
+  cliente.auth.getSession().then(({ data, error }) => {
+    if (error) console.error("Falha ao validar sessão:", error);
+    definirAcesso(data?.session?.user || null);
   });
 
   window.addEventListener("online", sincronizarAgora);
+  window.addEventListener("beforeunload", sincronizarAgora);
   setInterval(sincronizarAgora, INTERVALO_SINCRONIZACAO);
 })();
